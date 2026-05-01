@@ -59,11 +59,11 @@ pipeline {
         //       }
         //     }
         // } 
-        stage('Dependabot Alerts Check') {
+         stage('Dependabot Alerts Check') {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     script {
-                        def owner = 'mamatha-ravi'
+                        def owner = 'daws-88s'
                         def repo  = 'catalogue'
 
                         def response = sh(
@@ -117,94 +117,94 @@ pipeline {
                 }
             }
         }
-    //     stage('Trivy OS Scan') {
-    //         steps {
-    //             script {
-    //                 // Generate table report
-    //                 sh """
-    //                     trivy image \
-    //                         --scanners vuln \
-    //                         --pkg-types os \
-    //                         --severity HIGH,MEDIUM \
-    //                         --format table \
-    //                         --output trivy-os-report.txt \
-    //                         --exit-code 0 \
-    //                         ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion}
-    //                 """
+        stage('Trivy OS Scan') {
+            steps {
+                script {
+                    // Generate table report
+                    sh """
+                        trivy image \
+                            --scanners vuln \
+                            --pkg-types os \
+                            --severity HIGH,MEDIUM \
+                            --format table \
+                            --output trivy-os-report.txt \
+                            --exit-code 0 \
+                            ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion}
+                    """
 
-    //                 // Print table to console
-    //                 sh 'cat trivy-os-report.txt'
+                    // Print table to console
+                    sh 'cat trivy-os-report.txt'
 
-    //                 // Fail pipeline if vulnerabilities found
-    //                 def scanResult = sh(
-    //                     script: """
-    //                         trivy image \
-    //                             --scanners vuln \
-    //                             --pkg-types os \
-    //                             --severity HIGH,MEDIUM \
-    //                             --format table \
-    //                             --exit-code 1 \
-    //                             --quiet \
-    //                             ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion}
-    //                     """,
-    //                     returnStatus: true
-    //                 )
+                    // Fail pipeline if vulnerabilities found
+                    def scanResult = sh(
+                        script: """
+                            trivy image \
+                                --scanners vuln \
+                                --pkg-types os \
+                                --severity HIGH,MEDIUM \
+                                --format table \
+                                --exit-code 1 \
+                                --quiet \
+                                ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion}
+                        """,
+                        returnStatus: true
+                    )
 
-    //                 if (scanResult != 0) {
-    //                     error "🚨 Trivy found HIGH/MEDIUM OS vulnerabilities. Pipeline failed."
-    //                 } else {
-    //                     echo "✅ No HIGH or MEDIUM OS vulnerabilities found. Pipeline continues."
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     stage('Trivy Dockerfile Scan') 
-    //     {
-    //         steps {
-    //             script {
-    //                 sh """
-    //                     trivy config \
-    //                         --severity HIGH,MEDIUM \
-    //                         --format table \
-    //                         --output trivy-dockerfile-report.txt \
-    //                         Dockerfile
-    //                 """
+                    if (scanResult != 0) {
+                        error "🚨 Trivy found HIGH/MEDIUM OS vulnerabilities. Pipeline failed."
+                    } else {
+                        echo "✅ No HIGH or MEDIUM OS vulnerabilities found. Pipeline continues."
+                    }
+                }
+            }
+        }
+        stage('Trivy Dockerfile Scan') 
+        {
+            steps {
+                script {
+                    sh """
+                        trivy config \
+                            --severity HIGH,MEDIUM \
+                            --format table \
+                            --output trivy-dockerfile-report.txt \
+                            Dockerfile
+                    """
 
-    //                 sh 'cat trivy-dockerfile-report.txt'
+                    sh 'cat trivy-dockerfile-report.txt'
 
-    //                 def scanResult = sh(
-    //                     script: """
-    //                         trivy config \
-    //                             --severity HIGH,MEDIUM \
-    //                             --exit-code 1 \
-    //                             --format table \
-    //                             Dockerfile
-    //                     """,
-    //                     returnStatus: true
-    //                 )
+                    def scanResult = sh(
+                        script: """
+                            trivy config \
+                                --severity HIGH,MEDIUM \
+                                --exit-code 1 \
+                                --format table \
+                                Dockerfile
+                        """,
+                        returnStatus: true
+                    )
 
-    //                 if (scanResult != 0) {
-    //                     error "🚨 Trivy found HIGH/MEDIUM misconfigurations in Dockerfile. Pipeline failed."
-    //                 } else {
-    //                     echo "✅ No HIGH or MEDIUM Dockerfile misconfigurations found. Pipeline continues."
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     stage ('Push image to ECR'){
-    //         steps {
-    //            script{
-    //                 withAWS(credentials: 'aws-creds', region: "${region}") {
-    //                     // Commands here have AWS authentication
-    //                     sh """
-    //                         aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
-    //                         docker push ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion}
-    //                     """
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+                    if (scanResult != 0) {
+                        error "🚨 Trivy found HIGH/MEDIUM misconfigurations in Dockerfile. Pipeline failed."
+                    } else {
+                        echo "✅ No HIGH or MEDIUM Dockerfile misconfigurations found. Pipeline continues."
+                    }
+                }
+            }
+        }
+        stage ('Push image to ECR'){
+            steps {
+               script{
+                    withAWS(credentials: 'aws-creds', region: "${region}") {
+                        // Commands here have AWS authentication
+                        sh """
+                            aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+                            docker push ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion}
+                        """
+                    }
+                }
+            }
+        }
+    }
 
     // post build
     post { 
@@ -219,5 +219,4 @@ pipeline {
             echo "pipeline failure"
         }
     }
-}
 }
