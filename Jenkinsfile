@@ -63,7 +63,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     script {
-                        def owner = 'daws-88s'
+                        def owner = 'mamatha-ravi'
                         def repo  = 'catalogue'
 
                         def response = sh(
